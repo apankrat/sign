@@ -1,0 +1,150 @@
+.Dd Aug 07, 2004
+.Dt sign 1
+.Os \  
+.Sh NAME
+.Nm sign, unsign
+.Nd file signing and signature verification utilities
+.Sh SYNOPSIS
+.Nm sign
+.Op Fl u | Fl t | Fl g 
+.Op options | filenames
+.Op --
+.Op filenames
+.Nm unsign
+.Op Fl s | Fl t | Fl g
+.Op options | filenames
+.Op --
+.Op filenames
+.Sh OVERVIEW
+\fBsign\fR creates a digital signature of file's content and appends it to 
+the file. \fBunsign\fR verifies and strips the signature.
+.Pp
+The signature is a file digest encrypted with signer's private key using 
+public-key cryptography algorithms. Unlike simple hashing this not only
+ensures file's integrity, but also allows for checking an authenticity
+of the file.
+.Pp
+Authenticity check requires verifying party to first establish a trust with 
+a signer by associating signer's public key with a certain file name prefix 
+(the \fBtitle\fR). This only needs to be done once, all subsequent 
+authenticity checks for all files starting with this \fBtitle\fR are 
+performed automatically without any human interaction.
+.Pp
+This is very similar to the concept behind \fBknown_hosts\fR file maintained by 
+OpenSSH. Trust hierarchy is flat and it is built gradually on as-needed basis.
+.Sh DESCRIPTION
+\fBsign\fR expects a list of file names to accompany the command-line options.
+Each file is replaced by a signed version of itself; its name is appended with
+".signed".
+.Pp
+\fBunsign\fR (or \fBsign -u\fR) verifies file's signature and replaces the 
+file with the copy of itself less the signature. The extension of the file 
+is changed according to the following table:
+.Pp
+      <filename>.signed  ->  <filename>
+      <filename>.sgz     ->  <filename>.gz
+      <filename>.sbz     ->  <filename>.bz
+      <filename>.sbz2    ->  <filename>.bz2
+      <filename>.stgz    ->  <filename>.tgz
+      <filename>.stbz    ->  <filename>.tbz
+      <filename>.stbz2   ->  <filename>.tbz2
+.Pp
+In all other cases, the warning is issued and the file name is appended 
+with ".out". If no files are specified, \fBsign\fR processes standard input 
+to standard output;
+.Fl -title
+argument is required in this case. 
+.Pp
+Both \fBsign\fR and \fBunsign\fR will process standard input to standard
+output if no file names are supplied. They will neither overwrite existing 
+files nor will keep the originals.
+.Pp
+\fBsign -t\fR is similar to \fBunsign\fR, but it only verifies (tests) the
+signature and creates no output files.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl s -sign
+Force signing. \fBsign\fR and \fBunsign\fR are the same program, which is 
+run with a different default set of flags depenging on the invokation name.
+\fB-s\fR and \fB-u\fR flags allow overriding this mechanism.
+.It Fl u -unsign
+Force unsiging, ie verify and strip the signature.
+.It Fl t -test
+Verify the signature without stripping it. Functionally similar to 
+\fBunsign -ck ... > /dev/null\fR.
+.It Fl g -keygen
+Generate a signing key to be used for creating signatures. Currently
+\fBsign\fR does not have its own key generation facility; \fBssh-keygen\fR 
+is spawned instead.
+.Pp
+.Fl s Fl u Fl t Fl g
+flags are mutually exclusive, only the last in a command line has effect.
+.It Fl c -stdout
+Output to standard output
+.It Fl k -keep
+Keep (don't delete) input files
+.It Fl f -force
+Overwrite existing output files
+.It Fl v -verbose
+Increase verbosity level. There are four verbosity levels - error (default),
+warning, informational and trace, each emitting progressively more information
+during the processing
+.It Fl V -version
+Display software version and copyright information
+.It Fl L -license
+Display software license information
+.It Fl -title Ar title
+Do not try to automatically select a title when signing, use 
+.Ar title
+instead.
+.It Fl -password Ar password
+If private key is encrypted, use 
+.Ar password 
+to decrypt it. Otherwise \fBsign\fR will prompt for a password if reading 
+input from the file(s) or will fail with an error if stdin is used.
+.It Fl -strict
+Use \fBstrict\fR signature checking, meaning that files with unknown titles
+will be rejected as unauthentic. Note that if the title is known, but signer's
+key does not match, the file is rejected regardless of any command line flags.
+.It Fl -weak
+Use \fBweak\fR signature checking, ie accept files with unknown titles as
+authentic. Note that this does not however add the title/pubkey to 
+\fBknown_titles\fR.
+.It Fl -
+Treat all subsequent arguments as file names, even if they start with a dash.
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa $HOME/.sign/pubkey
+Contains the public portion of the signing key. It's a text file in OpenSSH
+.Pa id_xxx.pub
+file format.
+.It Pa $HOME/.sign/prikey
+Contains the private portion of the signing key. Sensitive data can also
+be optionally encrypted with 3DES. The file should be readable by the user
+but not accesible by others.
+.It Pa $HOME/.sign/owned_titles
+Contains a list of titles (one title per line), which \fBsign\fR scans from
+top to bottom for every file being signed. The first match yields file's
+title. If there's no match, \fBsign\fR complains and expects \fB--title\fR 
+argument.
+.It Pa $HOME/.sign/known_titles
+Lists known authenticated titles. The file contains public keys, one per line, 
+preceeded by a title that this key is authorized for.
+.Sh DIAGNOSTICS
+\fBsign\fR and \fBunsign\fR return: 
+.Pp
+      0  - a normal exit 
+      1  - a generic problem (no enough memory, I/O error, etc) 
+      10 - no signature found
+      11 - corrupted signature or wrong version
+      12 - the title doesn't match the filename
+      13 - the signature doesn't match the content (!)
+      14 - the signature is OK, the title known, but pubkey is different
+      15 - the signature is OK, but the title is unknown
+.Sh AUTHOR
+Alex Pankratov, ap@swapped.cc
+.Pp
+http://swapped.cc/sign
+.Pp
+The code is partially based on ideas and the design of bzip2, OpenSSH and
+a handful of other Open Source projects.
