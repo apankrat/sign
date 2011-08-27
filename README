@@ -11,6 +11,10 @@
 
 ===
 
+	Distributed under terms of BSD license. 
+
+===
+
 	To build with GNU tools run
 		gmake
 
