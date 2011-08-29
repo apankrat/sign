@@ -54,7 +54,7 @@ typedef enum
 
 typedef enum
 {
-	CHECH_unknown,
+	CHECK_unknown,
 	CHECK_weak,
 	CHECK_ask,
 	CHECK_strict
@@ -1050,7 +1050,7 @@ void do_unsign(void)
 
 	buf_assign(&kfp, hval, md5_alg->hlen);
 
-	/* signature is ok, now's let's check if know the title */
+	/* signature is ok, now's let's check if we know the title */
 	for (i=0; i<ctx->u.known_n; i++)
 		if (! buf_bufcmp(&title, &ctx->u.known[i].name))
 			break;
