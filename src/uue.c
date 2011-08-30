@@ -41,8 +41,9 @@ static const char b64_rev[] =
 /*
  *	decode
  */
-size_t uudecode_len(const char * enc, size_t len)
+size_t uudecode_len(const void * _enc, size_t len)
 {
+	const char * enc = _enc;
 	size_t r = 3 * len / 4;
 	
 	if (! len || (len % 4))
@@ -55,9 +56,11 @@ size_t uudecode_len(const char * enc, size_t len)
 	return r-2;
 }
 
-bool_t uudecode(const char * enc, size_t len, char * dec)
+bool_t uudecode(const void * _enc, size_t len, void * _dec)
 {
-	const char * e;
+	const uchar * enc = _enc;
+	uchar * dec = _dec;
+	const uchar * e;
 	char v;
 
 	assert(len && ! (len % 4));
@@ -108,9 +111,11 @@ size_t uuencode_len(size_t len)
 	return (len + 2) / 3 * 4;
 }
 
-void uuencode(const char * raw, size_t len, char * enc)
+void uuencode(const void * _raw, size_t len, void * _enc)
 {
-	const char * end = raw + len;
+	const uchar * raw = _raw;
+	const uchar * end = raw + len;
+	uchar * enc = _enc;
 	char v0, v1, v2;
 	
 	while (raw < end)

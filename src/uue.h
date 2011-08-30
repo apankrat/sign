@@ -17,11 +17,11 @@
 
 #include "types.h" /* size_t */
 
-size_t uudecode_len(const char * enc, size_t enc_len);
-bool_t uudecode(const char * enc, size_t enc_len, char * dec);
+size_t uudecode_len(const void * enc, size_t enc_len);
+bool_t uudecode    (const void * enc, size_t enc_len, void * raw);
 
 size_t uuencode_len(size_t raw_len);
-void   uuencode(const char * raw, size_t raw_len, char * enc);
+void   uuencode    (const void * raw, size_t raw_len, void * enc);
 
 #endif
 
