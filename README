@@ -1,6 +1,6 @@
 =============================================================================
 
-	sign 1.0.7
+	sign 1.1
 
 ===
 
@@ -37,6 +37,11 @@
 		unsign -t <filename>
 
 ===
+
+	1.1   - Aug 30, 2011
+		* added -C flag to allow specifying config directory
+		* cleaned up warnings and what nots that surfaced in
+		  7 years since last update
 
 	1.0.7 - Aug 07, 2004
 		* fixed 'test' (-t) mode (kudos to Kai for noticing)

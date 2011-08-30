@@ -25,6 +25,36 @@
 /*
  *	utility functions
  */
+char * path_cat(const char * path, const char * file)
+{
+	int path_n = strlen(path);
+	int file_n = strlen(file);
+	char * r;
+
+	if (! path_n)
+		return strdup(file);
+
+	r = xalloc(path_n + 1 + file_n);
+	
+	strcpy(r, path);
+	if (path[path_n-1] != SYS_path_sep)
+		r[path_n++] = SYS_path_sep;
+	strcpy(r+path_n, file);
+
+	return r;
+}
+
+char * path_exp(const char * path)
+{
+	char * fn = sys_expand(path);
+	if (! fn)
+		die(-1, "guru meditation error");
+	return fn;
+}
+
+/*
+ *
+ */
 bool_t read_file(const char * filename, size_t maxsz, buf_t * buf)
 {
 	char * fn;
@@ -182,21 +212,13 @@ size_t xwrite_tlb(int t, const buf_t * data, FILE * fh, hash_val_t * h)
 	return xwrite_tlv(t, buf_size(data), data->p, fh, h);
 }
 
-char * xpath(const char * path)
-{
-	char * fn = sys_expand(path);
-	if (! fn)
-		die(-1, "guru meditation error");
-	return fn;
-}
-
 void xmkdir(const char * path)
 {
 	sys_fstat_t st;
 	char * fn;
 
 	/*   */
-	fn = xpath(path);
+	fn = path_exp(path);
 
 	if (sys_fstat(fn, &st))
 	{

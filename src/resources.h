@@ -21,15 +21,9 @@
 #define VERSION_MAGIC       "sig1"
 
 /*
- *	file names
+ *	where the config is
  */
-#define DIR_ROOT            "~/.sign"
- 
-#define FILE_PUBLIC_KEY     DIR_ROOT "/pubkey"
-#define FILE_PRIVATE_KEY    DIR_ROOT "/prikey"
-
-#define FILE_OWNED_SOURCES  DIR_ROOT "/owned_titles"
-#define FILE_KNOWN_SOURCES  DIR_ROOT "/known_titles"
+#define CONF_DIR            "~/.sign"
 
 /*
  *	usage, version and license messages
@@ -42,6 +36,8 @@
 "  usage: sign [flags and input files in any order]\n" \
 "\n" \
 "  -h --help               print this message\n" \
+"  -C --config <path>      specify path to a config directory\n" \
+"\n" \
 "  -s --sign               create and append the signature\n" \
 "  -t --test               verify the signature\n" \
 "  -u --unsign             verify and strip the signature\n" \

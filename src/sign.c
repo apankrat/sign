@@ -102,6 +102,13 @@ struct state
 {
 	const char * name; /* invokation name  */
 
+	/* config path and file names */
+	const char * conf_dir;
+	const char * file_pubkey;
+	const char * file_prikey;
+	const char * file_owned_titles;
+	const char * file_known_titles;
+
 	/* command-line parameters */	
 	int keep;          /* keep input */
 	int force;         /* overwrite output */
@@ -164,6 +171,7 @@ void version(void);
 void init_defaults(void);
 int  map_long_arg(const char * str);
 void parse_args(int argc, char ** argv);
+void init_file_paths();
 void load_s_config(void); /* sign   */
 void load_u_config(void); /* unsign */
 void process(void);
@@ -220,6 +228,9 @@ int main(int argc, char ** argv)
 
 	/* parse arguments */
 	parse_args(argc, argv);
+
+	/* init file paths */
+	init_file_paths();
 
 	/* keygen is here on a temporary basis, it'll be moved */
 	if (ctx->mode == MODE_keygen)
@@ -280,6 +291,7 @@ void init_defaults(void)
 		ctx->mode = MODE_sign;
 
 	ctx->output = OUTPUT_file;
+	ctx->conf_dir = CONF_DIR;
 }
 
 int map_long_arg(const char * str)
@@ -291,6 +303,7 @@ int map_long_arg(const char * str)
 	} map[] =
 	{
 		{ 'h', "help" },
+		{ 'C', "config" },
 		{ 'k', "keep" },
 		{ 'f', "force" },
 		{ 'c', "stdout" },
@@ -359,11 +372,19 @@ void parse_args(int argc, char ** argv)
 			case 't': ctx->mode = MODE_test; break;
 			case 'u': ctx->mode = MODE_unsign; break;
 			case 'g': ctx->mode = MODE_keygen; break;
-		
+
 			case '?':
 			case 'h': usage();   die(0, 0);
 			case 'L': license(); die(0, 0);
 			case 'V': version(); die(0, 0);
+
+			case 'C':
+				if (i+1 == argc)
+					goto no_parm;
+
+				ctx->conf_dir = argv[++i];
+				break;
+				
 
 			case '\1': /* --title */
 				if (p[1] || i+1 == argc)
@@ -399,6 +420,17 @@ no_parm:
 /*
  *
  */
+void init_file_paths()
+{
+	ctx->file_pubkey = path_cat(ctx->conf_dir, "pubkey");
+	ctx->file_prikey = path_cat(ctx->conf_dir, "prikey");
+	ctx->file_owned_titles = path_cat(ctx->conf_dir, "owned_titles");
+	ctx->file_known_titles = path_cat(ctx->conf_dir, "known_titles");
+}
+
+/*
+ *
+ */
 void load_s_config(void)
 {
 	buf_t  buf;
@@ -421,12 +453,12 @@ void load_s_config(void)
 	/* load owned_titles */
 	need_titles = ! buf_size(&ctx->s.title);
 		
-	if (! read_file(FILE_OWNED_SOURCES, 16*1024, &ctx->s.owned_buf))
+	if (! read_file(ctx->file_owned_titles, 16*1024, &ctx->s.owned_buf))
 	{
 		if (! need_titles)
 			goto load_keys;
 			
-		error("failed to load title list '%s'", FILE_OWNED_SOURCES);
+		error("failed to load title list %s", ctx->file_owned_titles);
 		die(-1, "cannot figure out what title to use (did you forget "
 		        "--title ?)");
 	}
@@ -434,35 +466,35 @@ void load_s_config(void)
 	ctx->s.owned = parse_file(&ctx->s.owned_buf, &ctx->s.owned_n);
 	if (! ctx->s.owned && need_titles)
 	{
-		error("title list '%s' is empty", FILE_OWNED_SOURCES);
+		error("title list %s is empty", ctx->file_owned_titles);
 		die(-1, "cannot figure out what title to use (did you forget "
 		        "--title ?)");
 	}
 
 load_keys:
 	/* load public key */
-	if (! read_file(FILE_PUBLIC_KEY, 16*1024, &buf))
+	if (! read_file(ctx->file_pubkey, 16*1024, &buf))
 	{
-		error("failed to read public key from %s", FILE_PUBLIC_KEY);
+		error("failed to read public key from %s", ctx->file_pubkey);
 		die(-1,"did you run 'sign --keygen' ?");
 	}
 
 	ctx->s.pub = pubkey_parse_openssh_text(&buf);
 	if (! ctx->s.pub)
-		die(-1, "failed to load pubkey from %s", FILE_PUBLIC_KEY);
+		die(-1, "failed to load pubkey from %s", ctx->file_pubkey);
 		
 	buf_free(&buf);
 
 	/* load private key */
-	if (! read_file(FILE_PRIVATE_KEY, 16*1024, &buf))
+	if (! read_file(ctx->file_prikey, 16*1024, &buf))
 	{
-		error("failed to read private key from %s", FILE_PRIVATE_KEY);
+		error("failed to read private key from %s", ctx->file_prikey);
 		die(-1,"did you run 'sign --keygen' ?");
 	}
 
 	ctx->s.pri = prikey_parse_pem(&buf, get_passwd, ctx);
 	if (! ctx->s.pri)
-		die(-1, "failed to load prikey from %s", FILE_PRIVATE_KEY);
+		die(-1, "failed to load prikey from %s", ctx->file_prikey);
 	
 	buf_free(&buf);
 }
@@ -491,7 +523,7 @@ void load_u_config(void)
 		ctx->keep = 1;
 
 	/* load known_titles */ 
-	if (! read_file(FILE_KNOWN_SOURCES, 16*1024, &ctx->u.known_buf))
+	if (! read_file(ctx->file_known_titles, 16*1024, &ctx->u.known_buf))
 		goto done;
 
 	tmp = parse_file(&ctx->u.known_buf, &n);
@@ -513,7 +545,7 @@ void load_u_config(void)
 		p = buf_find(b, isspace);
 		if (! p)
 			die(-1, "%s, line %d is malformed", 
-				FILE_KNOWN_SOURCES, i+1);
+				ctx->file_known_titles, i+1);
 
 		t.name.p = b->p;
 		t.name.e = (uchar*)p;
@@ -527,7 +559,7 @@ void load_u_config(void)
 		t.pub = pubkey_parse_openssh_text(b);
 		if (! t.pub)
 			die(-1, "cannot load key %d from %s", i+1, 
-				FILE_KNOWN_SOURCES);
+				ctx->file_known_titles);
 
 		ctx->u.known[i] = t;	
 
@@ -699,9 +731,9 @@ void finalize(void)
 		return;
 
 	/* ok, add it */
-	xmkdir(DIR_ROOT);
+	xmkdir(ctx->conf_dir);
 	
-	fn = xpath(FILE_OWNED_SOURCES);
+	fn = path_exp(ctx->file_owned_titles);
 	fh = fopen(fn, "w");
 	if (! fh)
 		die(-1, "failed to open %s for updating", fn);
@@ -808,7 +840,7 @@ bool_t get_passwd(buf_t * pass, void * arg)
 	if (ctx->s.pass_tries > 3)
 		return bfalse;
 
-	fprintf(stderr, "Password for %s: ", FILE_PRIVATE_KEY);
+	fprintf(stderr, "Password for %s: ", ctx->file_prikey);
 	if (! sys_input(buf, sizeof buf, bfalse))
 		return bfalse;
 	
@@ -1082,7 +1114,7 @@ void do_unsign(void)
 	"Offending key in %s is %d\n", 
 				__buf_str(&ctx->u.known[i].name),
 				__buf_hex(&kfp, hex),
-				FILE_KNOWN_SOURCES,
+				ctx->file_known_titles,
 				i+1);
 
 		if (ctx->u.check == CHECK_strict)
@@ -1130,10 +1162,10 @@ void do_unsign(void)
 		FILE * fh;
 
 		/*   */
-		xmkdir(DIR_ROOT);
+		xmkdir(ctx->conf_dir);
 		
 		/*   */		
-		fn = xpath(FILE_KNOWN_SOURCES);
+		fn = path_exp(ctx->file_known_titles);
 		fh = fopen(fn, "a");
 		if (! fh)
 			die(-1, "failed to open %s for updating", fn);
@@ -1159,10 +1191,10 @@ void do_keygen(void)
 	char buf[256];
 	char * pri, * pub, * tmp;
 	
-	xmkdir(DIR_ROOT);
+	xmkdir(ctx->conf_dir);
 
-	pri = xpath(FILE_PRIVATE_KEY);
-	pub = xpath(FILE_PUBLIC_KEY);
+	pri = path_exp(ctx->file_prikey);
+	pub = path_exp(ctx->file_pubkey);
 
 	tmp = xstrmrg(pri, ".pub");
 
@@ -1181,7 +1213,7 @@ void do_keygen(void)
 	
 	warn("executing '%s' ..", buf);
 	if (system(buf) != 0)
-		die(-1, "'%s' failed", buf);
+		die(-1, "ssh-keygen failed", buf);
 
 	fprintf(stderr, "Renaming %s to %s\n", tmp, pub);
 	if (! sys_rename(tmp, pub))
