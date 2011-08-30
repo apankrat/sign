@@ -35,7 +35,7 @@
  *	usage, version and license messages
  */
 #define MESG_VERSION  \
-	"sign, a file signing utility. Version 1.0.7, 07-Aug-2004.\n" \
+	"sign, a file signing utility. Version 1.1, 30-Aug-2011.\n" \
 	"\n"
 
 #define MESG_USAGE   \
@@ -71,11 +71,11 @@
 "\n"
 	
 #define MESG_LICENSE \
-"  Copyright (c) 2004 Alex Pankratov. All rights reserved.\n" \
+"  Copyright (c) 2004-2011 Alex Pankratov. All rights reserved.\n" \
 "\n" \
 "  This program is free software; you can redistribute it and/or modify\n" \
-"  it under the terms set out in the LICENSE file, which is includedi in\n" \
-"  the sign-1.0 source distribution.\n" \
+"  it under the terms set out in the LICENSE file, which is included in\n" \
+"  the 'sign' source distribution.\n" \
 "\n" \
 "  This program is distributed in the hope that it will be useful,\n" \
 "  but WITHOUT ANY WARRANTY; without even the implied warranty of\n" \
