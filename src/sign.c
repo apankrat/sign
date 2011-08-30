@@ -516,9 +516,9 @@ void load_u_config(void)
 				FILE_KNOWN_SOURCES, i+1);
 
 		t.name.p = b->p;
-		t.name.e = p;
+		t.name.e = (uchar*)p;
 		
-		b->p = p+1;
+		b->p = t.name.e+1;
 
 		/* skip whitespace */
 		while (buf_size(b) && isspace(*b->p))
@@ -936,7 +936,8 @@ void do_unsign(void)
 	const size_t buf_max = sizeof buffer;
 
 	int i, n, len, total, hlen;
-	char ver[4], hval[HASH_max_len];
+	char ver[4];
+	uchar hval[HASH_max_len];
 	char hex[3*HASH_max_len];
 	const void * in;
 	hash_val_t * h;
@@ -1166,7 +1167,7 @@ void do_keygen(void)
 	tmp = xstrmrg(pri, ".pub");
 
 	snprintf(buf, sizeof buf, 
-		"ssh-keygen -t rsa -f %s -b 2048 -C \"\"", pri);
+		"ssh-keygen -t rsa -f %s -b 2048 -C \"\" -P \"\"", pri);
 
 	if (! confirm(
 	"sign does not currently have its own key generation facility. "
