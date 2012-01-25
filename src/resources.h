@@ -21,27 +21,23 @@
 #define VERSION_MAGIC       "sig1"
 
 /*
- *	file names
+ *	where the config is
  */
-#define DIR_ROOT            "~/.sign"
- 
-#define FILE_PUBLIC_KEY     DIR_ROOT "/pubkey"
-#define FILE_PRIVATE_KEY    DIR_ROOT "/prikey"
-
-#define FILE_OWNED_SOURCES  DIR_ROOT "/owned_titles"
-#define FILE_KNOWN_SOURCES  DIR_ROOT "/known_titles"
+#define CONF_DIR            "~/.sign"
 
 /*
  *	usage, version and license messages
  */
 #define MESG_VERSION  \
-	"sign, a file signing utility. Version 1.0.7, 07-Aug-2004.\n" \
+	"sign, a file signing utility. Version 1.1, 30-Aug-2011.\n" \
 	"\n"
 
 #define MESG_USAGE   \
 "  usage: sign [flags and input files in any order]\n" \
 "\n" \
 "  -h --help               print this message\n" \
+"  -C --config <path>      specify path to a config directory\n" \
+"\n" \
 "  -s --sign               create and append the signature\n" \
 "  -t --test               verify the signature\n" \
 "  -u --unsign             verify and strip the signature\n" \
@@ -71,11 +67,11 @@
 "\n"
 	
 #define MESG_LICENSE \
-"  Copyright (c) 2004 Alex Pankratov. All rights reserved.\n" \
+"  Copyright (c) 2004-2011 Alex Pankratov. All rights reserved.\n" \
 "\n" \
 "  This program is free software; you can redistribute it and/or modify\n" \
-"  it under the terms set out in the LICENSE file, which is includedi in\n" \
-"  the sign-1.0 source distribution.\n" \
+"  it under the terms set out in the LICENSE file, which is included in\n" \
+"  the 'sign' source distribution.\n" \
 "\n" \
 "  This program is distributed in the hope that it will be useful,\n" \
 "  but WITHOUT ANY WARRANTY; without even the implied warranty of\n" \

@@ -23,6 +23,14 @@
 #include <openssl/pem.h>
 
 /*
+ *	openssl/evp.h had some of its constants renamed along 
+ *	the way - fix it
+ */
+#ifndef EVP_F_EVP_DECRYPTFINAL_EX
+#define EVP_F_EVP_DECRYPTFINAL_EX  EVP_F_EVP_DECRYPTFINAL
+#endif
+
+/*
  *
  */
 static void   pki_init(void);
@@ -300,13 +308,13 @@ prikey_t * prikey_parse_pem(const buf_t * buf, password_cb cb, void * cb_arg)
 
 		/* if it's not a decryption problem - bail out */
 		if (ERR_get_error() != ERR_PACK(ERR_LIB_EVP,
-		                                EVP_F_EVP_DECRYPTFINAL,
+		                                EVP_F_EVP_DECRYPTFINAL_EX,
 		                                EVP_R_BAD_DECRYPT))
 			goto cleanup;
 
 		/* rewind bio stuff */
 		mem = (BUF_MEM*)bio->ptr;
-		mem->data = buf->p;
+		mem->data = (char*)buf->p;
 		mem->length =  buf_size(buf);
 	}
 

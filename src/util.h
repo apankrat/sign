@@ -22,6 +22,12 @@
 /*
  *
  */
+char * path_cat(const char * path, const char * file);
+char * path_exp(const char * path); /* sys_expand() */
+
+/*
+ *
+ */
 bool_t  read_file (const char * filename, size_t maxsz, buf_t * buf);
 buf_t * parse_file(const buf_t * b, size_t * lines);
 
@@ -35,9 +41,11 @@ size_t xwrite(const void * buf, size_t len, FILE * fh, hash_val_t * h);
 size_t xwrite_tlv(int t, size_t l, const void * v, FILE * fh, hash_val_t *h);
 size_t xwrite_tlb(int t, const buf_t * data, FILE * fh, hash_val_t *h);
 
-char * xpath(const char * path); /* sys_expand() */
 void   xmkdir(const char * path);
 
+/*
+ *
+ */
 bool_t confirm(const char * prompt, ...);
 
 #endif

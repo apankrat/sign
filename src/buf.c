@@ -19,6 +19,22 @@
 #include <assert.h>
 
 /*
+ *	basic
+ */
+buf_t * buf_assign(buf_t * b, uchar * p, size_t len)
+{
+	b->p = p;
+	b->e = p + len;
+	return b;
+}
+
+buf_t * buf_string(buf_t * b, char * str)
+{
+	buf_assign(b, (uchar*)str, strlen(str));
+	return b;
+}
+
+/*
  *	alloc
  */
 void * buf_alloc(buf_t * b, size_t len)

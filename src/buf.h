@@ -28,35 +28,33 @@ struct buffer
 
 typedef struct buffer buf_t;
 
-/*
- *
- */
-#define buf_reset(b)           ((b)->p = (b)->e = 0)
-#define buf_assign(b, ptr, n)  ((b)->e = (ptr)+(n), (b)->p = (ptr))
-#define buf_string(b, str)     ((b)->p = (str), (b)->e = (str) + strlen(str))
-
+/*  basic  */
 #define buf_size(b)            ((b)->e - (b)->p)
+#define buf_reset(b)           ((b)->p = (b)->e = 0)
+
+buf_t * buf_assign(buf_t * b, uchar * p, size_t len);
+buf_t * buf_string(buf_t * b, char * s);
 
 /*  alloc  */
-void * buf_alloc (buf_t * b, size_t len);
-void * buf_grow (buf_t * b, size_t inc);
-void   buf_free (buf_t * b);
+void *  buf_alloc (buf_t * b, size_t len);
+void *  buf_grow (buf_t * b, size_t inc);
+void    buf_free (buf_t * b);
  
 /*  search  */
-void * buf_find(const buf_t * b, int (*is)(int));
+void *  buf_find(const buf_t * b, int (*is)(int));
 
 /*  comparison  */
-int    buf_strcmp(const buf_t * b, const char * str);
-int    buf_memcmp(const buf_t * b, const void * ptr, size_t len);
-int    buf_bufcmp(const buf_t * b, const buf_t * b2);
-bool_t buf_prefix(const buf_t * b, const buf_t * pfx); /* b starts with pfx */
+int     buf_strcmp(const buf_t * b, const char * str);
+int     buf_memcmp(const buf_t * b, const void * ptr, size_t len);
+int     buf_bufcmp(const buf_t * b, const buf_t * b2);
+bool_t  buf_prefix(const buf_t * b, const buf_t * pfx); /* b starts with pfx */
 
 /*  serialization  */
-bool_t buf_parse_len(buf_t * b, size_t * v);  /* 32 bit, msb */
-bool_t buf_parse_str(buf_t * b, buf_t * str); /* len, data   */
+bool_t  buf_parse_len(buf_t * b, size_t * v);  /* 32 bit, msb */
+bool_t  buf_parse_str(buf_t * b, buf_t * str); /* len, data   */
 
-bool_t buf_store_len(buf_t * b, size_t v);
-bool_t buf_store_str(buf_t * b, const void * p, size_t n);
+bool_t  buf_store_len(buf_t * b, size_t v);
+bool_t  buf_store_str(buf_t * b, const void * p, size_t n);
 
 /*  conversion  */
 const char * buf_to_hex(const buf_t * b, void * txt, size_t len);
